@@ -12,8 +12,8 @@ class App extends Component {
     super(props);
     let msalConfig = {
       auth: {
-        clientId: '7fa75408-cc61-44a5-8682-9f0c4362ca51',
-        authority: 'https://ssdb2cdev.b2clogin.com/tfp/ssdb2cdev.onmicrosoft.com/B2C_1_signup_signin2/',
+        clientId: '0da90f62-a335-4338-a70a-3d73ea275926',
+        authority: 'https://aadb2cstarterkit.b2clogin.com/tfp/aadb2cstarterkit.onmicrosoft.com/B2C_1_signup_signin/',
         id:"",
         validateAuthority: false
       }
@@ -35,23 +35,9 @@ class App extends Component {
       let id = this.state.msalInstance.getAccount();
       this.setState({
         loggedin: true,
-        email: id.userName,
-        username: id.name
+        id: id.userName,
+        displayname: id.name
       });
-      var tokenRequest = {
-        scopes: ["https://ssdb2cdev.onmicrosoft.com/functions/functions.read"] // optional Array<string>
-      };
-      this.state.msalInstance.acquireTokenSilent(tokenRequest)
-      .then(response => {
-        this.setState({
-        loggedin:true,
-          token:response.accessToken,
-          displayname:response.idToken.claims.name,
-          id:response.idToken.claims.sub
-        });
-        this.fetchNotes();
-  
-    });
     }
   }
 
@@ -113,7 +99,7 @@ class App extends Component {
     {this.state.loggedin? 
           <Menu.Item>
             
-            Welcome, <a href="https://ssdb2cdev.b2clogin.com/ssdb2cdev.onmicrosoft.com/v2.0/.well-known/openid-configuration?p=B2C_1_edit">
+            Welcome, <a href="https://aadb2cstarterkit.b2clogin.com/aadb2cstarterkit.onmicrosoft.com/v2.0/.well-known/openid-configuration?p=B2C_1_edit">
               {this.state.displayname}!
               </a>
               <Button onClick={this.signout}>SignOut</Button>
@@ -135,13 +121,7 @@ class App extends Component {
               
             
         {this.state.loggedin?   
-        <div>
-          {this.state.notes.length > 0 ?
-                sorted
-                :
-                <span>You have no notes</span>
-          }
-        <NoteForm token={this.state.token}></NoteForm>
+        <div>Hello
         </div>
         :
         <span></span>
