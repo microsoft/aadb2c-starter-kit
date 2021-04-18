@@ -37,6 +37,8 @@ class App extends Component {
         loggedin: true,
         id: id.userName,
         displayname: id.name
+      },()=>{
+        this.fetchNotes();
       });
     }
   }
@@ -62,21 +64,20 @@ class App extends Component {
     if(event){event.preventDefault();}
     
     if (this.state.loggedin) {
-      var headers = new Headers();
-        var bearer = "Bearer " + this.state.token;
-        headers.append("Authorization", bearer);
         
-      var endpoint = "https://ssdadb2cjsbackend.azurewebsites.net/api/notes/"+this.state.id;
+      var endpoint = "https://aadb2cmw.azurewebsites.net/api/echo?code=V99VNLsJaCmmtX4x5DdTWtc1DDb3RxyJhYeZNGl7wDhOZAH/kvR7oA==";
       var options = {
         method: "GET",
-        headers:headers
+        
       };
       fetch(endpoint, options)
-        .then(response => response.json())
-        .then(data => {
-          this.setState({ notes: data.text });
+        .then((response)=>{
+            //this.setState({ notes: data.text });
+            console.log(response);
+        });
+        
+          
 
-        })
     }
   }
 
