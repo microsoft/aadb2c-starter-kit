@@ -12,8 +12,8 @@ gql`
     getNotesByUser:[Note]
 }
 type Mutation {
-    updateNote(id:ID,userid:String,text: String):Note
-    newNote(userid:String,text: String): Note
+    updateNote(id:ID,text: String):Note
+    newNote(text: String): Note
 }
 `;
 const CosmosBackend = require('./datasources');
