@@ -4,28 +4,44 @@ import { Button, Menu } from 'semantic-ui-react'
 
 import Note from './Note';
 import NoteForm from './NoteForm';
-import {Navbar, Nav, NavbarBrand} from 'react-bootstrap';
 import * as Msal from "msal";
-class App extends Component {
+import { config } from './Config';
+import { ApolloClient, InMemoryCache } from '@apollo/client';
+import NotesApi from './NotesAPI';
+import { gql } from '@apollo/client';
 
+const NotesQuery=gql`
+  query{
+    notes:getNotesByUser{id text}
+  }
+  `;
+const NewNoteMutation=gql`
+  mutation($te:String){
+    newNote(text:$te){id text}
+  }
+`;
+
+class App extends Component {
+  
   constructor(props) {
     super(props);
     let msalConfig = {
       auth: {
-        clientId: '0da90f62-a335-4338-a70a-3d73ea275926',
-        authority: 'https://aadb2cstarterkit.b2clogin.com/tfp/aadb2cstarterkit.onmicrosoft.com/B2C_1_signup_signin/',
+        clientId: config.clientId,
+        authority: config.authority,
         id:"",
         validateAuthority: false
       }
     };
+    
     let msalI = new Msal.UserAgentApplication(msalConfig);
     this.state = {
       msalInstance:msalI,
       loggedin:false,
-      token:"",
+      id:null,
       displayname:"",
       notes: [],
-      token: ''
+      api:null
     };
   }
 
@@ -35,7 +51,7 @@ class App extends Component {
       let id = this.state.msalInstance.getAccount();
       this.setState({
         loggedin: true,
-        id: id.userName,
+        id: id.accountIdentifier,
         displayname: id.name
       },()=>{
         this.fetchNotes();
@@ -59,29 +75,41 @@ class App extends Component {
     this.state.msalInstance.loginRedirect(loginRequest);
   }
   
+  getAPIClient=()=>{
+    return new ApolloClient({
+      uri: config.apiurl + this.state.id,
+      cache: new InMemoryCache()
+    });
+  }
 
   fetchNotes = (event) => {
-    if(event){event.preventDefault();}
-    
     if (this.state.loggedin) {
-        
-      var endpoint = "https://aadb2cmw.azurewebsites.net/api/echo?code=V99VNLsJaCmmtX4x5DdTWtc1DDb3RxyJhYeZNGl7wDhOZAH/kvR7oA==";
-      var options = {
-        method: "GET",
-        
-      };
-      fetch(endpoint, options)
-        .then((response)=>{
-            //this.setState({ notes: data.text });
-            console.log(response);
-        });
-        
-          
+      let NotesApi = this.getAPIClient();
+      
+      NotesApi.query({
+        query:NotesQuery 
+      })
+      .then(response=>{
+        this.setState({notes:response.data.notes});
+      });
 
     }
   }
 
-  
+  newNote = ({text:noteText})=>{
+    this.setState({submitting:true});
+    let NotesApi = this.getAPIClient();
+    NotesApi.mutate({
+      mutation:NewNoteMutation,
+      variables:{
+        te:noteText
+      }
+    })
+    .then((response)=>{
+      this.setState({submitting:false});
+      this.fetchNotes();
+    });
+  }
 
   render() {
     let sorted=[];
@@ -94,42 +122,33 @@ class App extends Component {
     return (
       <div >
          <Menu>
-    <Menu.Item>
-    Notes App!
-    </Menu.Item>
-    {this.state.loggedin? 
           <Menu.Item>
-            
+            Notes App!
+          </Menu.Item>
+          {this.state.loggedin? 
+          <Menu.Item>
             Welcome, <a href="https://aadb2cstarterkit.b2clogin.com/aadb2cstarterkit.onmicrosoft.com/v2.0/.well-known/openid-configuration?p=B2C_1_edit">
-              {this.state.displayname}!
-              </a>
-              <Button onClick={this.signout}>SignOut</Button>
-            </Menu.Item>
+            {this.state.displayname}!
+            </a>
+            <Button onClick={this.signout}>SignOut</Button>
+          </Menu.Item>
           :
-          <Button onClick={this.signin}>Sign In</Button>
+            <Button onClick={this.signin}>Sign In</Button>
           }
-    <Menu.Item>
-      
-    </Menu.Item>
-  </Menu>
-        
-          
-        
-        <br/>
-        <br/>
-        
-              
-              
-            
-        {this.state.loggedin?   
-        <div>Hello
-        </div>
-        :
-        <span></span>
-  }
-      </div>
-    );
-  }
+          <Menu.Item>     
+      </Menu.Item>
+    </Menu>  
+    {this.state.loggedin?   
+    <div>
+      <NoteForm submitCallback={this.newNote} submitting={this.state.submitting}></NoteForm>
+      {sorted}
+    </div>
+    :
+    <span>Please Sign In</span>
+    }
+  </div>
+  );
+}
 }
 
 export default App;

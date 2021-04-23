@@ -24,28 +24,8 @@ class NoteForm extends Component {
     submitForm = (event) => {
         event.preventDefault();
         this.setState({ submitting: true });
-        var headers = new Headers();
-        var bearer = "Bearer " + this.props.token;
-        headers.append("Authorization", bearer);
-        
-        let data = {
-            title: this.state.title,
-            content: this.state.content
-        };
-        
-        var endpoint="https://ssdadb2cjsbackend.azurewebsites.net/api/NotesWrite";
-       var options = {
-        method: "POST",
-        headers: headers,
-        body:JSON.stringify(data)
-        };
-        fetch(endpoint,options)
-        .then(response=>response.json())
-        .then(data=>{
-          console.log(data.text);
-          this.setState({submitting:false});
-        })
-
+        this.props.submitCallback({text:this.state.content});
+        this.setState({contents:""});
     }
 
     render() {
@@ -53,7 +33,7 @@ class NoteForm extends Component {
 
         return (
             <div>
-                {!this.state.submitting ?
+                {!this.props.submitting ?
                     <form>
                         <label for="title">Title:</label>
                         <input onChange={this.formChangeHandler} name="title"></input>

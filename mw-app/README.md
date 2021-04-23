@@ -19,6 +19,10 @@ If you want to run local you must have [Azure Functions Core Tools](https://docs
     "cosmos":"REPLACE",
     "FUNCTIONS_WORKER_RUNTIME": "node",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true"
+  },
+  "Host": {
+    "LocalHttpPort": 7071,
+    "CORS": "*"
   }
 }
 ```
